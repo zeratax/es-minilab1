@@ -1,0 +1,19 @@
+{
+  "name": "statecharts",
+  "version": "1.0.0",
+  "source": "index.html",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "parcel index.html --open",
+    "build": "parcel build index.html"
+  },
+  "dependencies": {
+    "@parcel/core": "^2.10.2",
+    "@xstate/fsm": "^2.1.0",
+    "babel-types": "^6.26.0",
+    "parcel": "^2.10.2",
+    "typescript": "^5.2.2",
+    "xstate": "^5.0.0-beta.42"
+  }
+}
