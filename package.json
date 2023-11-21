@@ -6,11 +6,16 @@
   "license": "MIT",
   "scripts": {
     "start": "parcel index.html --open",
-    "build": "parcel build index.html"
+    "build": "yarn run build:html && yarn run build:mmd",
+    "build:html": "parcel build index.html",
+    "build:mmd": "yarn build:mmd:png && yarn build:mmd:svg && yarn build:mmd:pdf",
+    "build:mmd:png": "mmdc -i src/index.mmd -o dist/output.png -t dark -b transparent",
+    "build:mmd:svg": "mmdc -i src/index.mmd -o dist/output.svg -t dark -b transparent",
+    "build:mmd:pdf": "mmdc -i src/index.mmd -o dist/output.pdf -t dark -b transparent"
   },
   "dependencies": {
+    "@mermaid-js/mermaid-cli": "^10.6.1",
     "@parcel/core": "^2.10.2",
-    "@xstate/fsm": "^2.1.0",
     "babel-types": "^6.26.0",
     "parcel": "^2.10.2",
     "typescript": "^5.2.2",

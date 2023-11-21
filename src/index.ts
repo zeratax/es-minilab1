@@ -27,9 +27,16 @@ enum EventTypes {
   Next = 'next',
   Leave = 'leave',
   Enter = 'enter',
-  Off = 'off',
-  Cool = 'cool',
-  Heat = 'heat',
+  Off1 = 'off1',
+  Cool1 = 'cool1',
+  Heat1 = 'heat1',
+  CoolRoom1 = 'coolRoom1',
+  HeatRoom1 = 'heatRoom1',
+  Off2 = 'off2',
+  Cool2 = 'cool2',
+  Heat2 = 'heat2',
+  CoolRoom2 = 'coolRoom2',
+  HeatRoom2 = 'heatRoom2',
   TimetableOn = 'timetableOn',
   TimetableOff = 'timetableOff',
   WindowsOpen = 'windowsOpen',
@@ -40,57 +47,38 @@ enum EventTypes {
 
 type Events =
   | { type: EventTypes }
+  | { type: 'setTempManually', room1: number, room2: number }
 
 type Guards =
   | { type: 'isTooCold', params: { roomKey: Rooms } }
   | { type: 'isTooHot', params: { roomKey: Rooms } }
   | { type: 'isCorrectTemperature', params: { roomKey: Rooms } }
+  | { type: 'room1ColderThanRoom2' }
+  | { type: 'room1HotterThanRoom2' }
+  | { type: 'room1EqualToRoom2' }
   | { type: 'isTimetableOn' }
   | { type: 'isTimetableOff' }
 
-interface setTargetTemperature { type: 'setTargetTemperature', params: { target_temperature: { [key in Rooms]: number } } }
-interface decreaseTemperature { type: 'decreaseTemperature', params: { roomKey: Rooms } }
-interface increaseTemperature { type: 'increaseTemperature', params: { roomKey: Rooms } }
+interface setTargetTemperature { type: 'setTargetTemperature', params?: { target_temperature: { [key in Rooms]: number } } }
 
 type Actions =
-  | decreaseTemperature
-  | increaseTemperature
   | setTargetTemperature
-  | { type: EventTypes.Cool }
-  | { type: EventTypes.Heat }
-  | { type: EventTypes.Off }
+  | { type: EventTypes.Cool1 }
+  | { type: EventTypes.Heat1 }
+  | { type: EventTypes.CoolRoom1 }
+  | { type: EventTypes.HeatRoom1 }
+  | { type: EventTypes.Off1 }
+  | { type: EventTypes.Cool2 }
+  | { type: EventTypes.Heat2 }
+  | { type: EventTypes.CoolRoom2 }
+  | { type: EventTypes.HeatRoom2 }
+  | { type: EventTypes.Off2 }
   | { type: 'setTimetableOn' }
   | { type: 'setTimetableOff' }
 
-function updateRoomTemperature(type: 'increase' | 'decrease', inRoomKey: Rooms) {
-  return function ({ context }: { context: Context }, action: { roomKey: Rooms }) {
-    const room = context[inRoomKey]
-    const outRoomKey = action.roomKey
-
-    if (inRoomKey === outRoomKey) {
-      if (type === 'increase') {
-        console.log(`trying to increase temperature in room ${outRoomKey}...`)
-        if (room.actual_temperature < 5) {
-          console.log(`increasing temperature in room ${outRoomKey}!`)
-          return { ...room, actual_temperature: room.actual_temperature + 1 }
-        }
-        console.log(`temperature in room ${outRoomKey} is already at maximum!`)
-      } else if (type === 'decrease') {
-        console.log(`trying to decrease temperature in room ${outRoomKey}...`)
-        if (room.actual_temperature > 1) {
-          console.log(`decreasing temperature in room ${outRoomKey}!`)
-          return { ...room, actual_temperature: room.actual_temperature - 1 }
-        }
-        console.log(`temperature in room ${outRoomKey} is already at minimum!`)
-      };
-    }
-    return room
-  }
-}
-
 export const machine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QGUC2BDATgFwAQHkA7AOnwDMyBiAS0OuwEIBtABgF1FQAHAe1nuo9CnEAA9EARgBsE4iwDsAVkUAmFQA4AnBO3zNAGhABPSQBZ5s05qlqJ0+efkqAvs8NoseIqRIBVWGCYxAAWPKhglNjU4djoAEYANmBErBxIILz8UUIi4ggAzDrE8vJSUupqUvmmijWGJgjlKsRSpoUsEnpOLIpSru4YOAQk3v6BIWERUTHxSeRkqSKZAjnpeYXqLZoqUpr5mor56hKF9YhVzcdKMvtOEhX9IB5D3qMBQaHhlEnoAG5gi3Sy2ywjWiHMpmKej2vQUmnUVkUZwQ8ny8mI+RYLFaKlKKhYhVMj2eXhGfneEy+AHdaBAeFTYPguGBCIDuHwVqDQOsJM1DvIWJo9FpTFInPJkYoKsRNNsWPjZU5MepiYNST5iGMPpNKDTCHSGQBhBJ8AHsJYckG5RCFWT7GrSRSaFjqRR2UyS-L5YjSVrqHpClRtIluJ5q4YagAq0TAsUSYGI0fCQRYAFopLgAJIAOUobIylsEXLE4KkimI5ix9oqpWdHuMkmk3ukrrhVnUxz6oZJEe8SdjswT-ZT6azuaYEjS7KyRetCFF5crBM0phruxY9YaEhdUgxihdvIh0NVnl7JH7caSiZjI4z+F8kcoolgsWwCfQZDfmAAFMhMwANAAJe8ACVkAASkoHtXnPGNLyHG85FHe9I3zYFZzBFFnWIXFRXKfZpG0TdGxXDEYSlFRCiOMoTxeMlrxmeMGPGKRU23Mc83NIFC1WblJGxSEZCcSjjnMHZkTsGwMXyN0HBkMtV3yWj1T7ODB2YoJWPYnM80nC0Z14ksEG3VoWk6NQjgkMSpAkl1y1k8wiKsstNGUs9mPgjSWjYlgCAfJ8X3QN9iA-L9vwAMVA4DfDAyDoPoi91OHbz2JQtCeOLPITlIt0VG2E4y12dR8gknRvVhHQen3I55TcmCPKSxDtzY9QOPSgzMskcpIRUKVrBXWVqlMYjjOkWR93uUxeWKlQrJVbtw3qxKmOS5r7javTuI6ucWx6vrdisPZhpG7cERaBErKlA98iDOqErUlamrTdaUIC1930-QJfwA6LYqgxb7sYq9Vue1q0q46dOTnfFZukqVhsk11etK7Zih2Z0hVXeQrjuqMHuBpr1FTIM2ohgttswtQDhabG8uG0opqcUqpBYFpyn3PR207XHVKBhDkx9ImSZ0icp3JqHKby8sxQqFdzFaczbOK4hW2OIMHGPBbTyW-H+fGe5idMPzH2fd6Qs+n8-yA0CIP+7XAYHR6BYNknwbF9DDLySjRR9UxsT6hQ8oMBsEGscsSnxRQShsHphp52C+eIQLgvQABjKJ-kiXX5naiW+PnMsKwFZdV1xdcTqsca0QPXpqgOLsBntvHE+ThNaDTjOpmzihc6tTDRXRCRejUVFa9piT9l3HYR9m6Qpp6ePiAAdVpelYGIVOTQCCBdVXhkmRZXuMPztpF2L6sy7rZE0WadmVxKf1ZrRReV-1NfiB4ZlCF3t+jS3s13YZTnKfIuVYVxriviHG6lwWZ+1RI-HYSktZ0Q1K-A069P4sjekFD6YVwqZgAGoAFEACyOYHxENtvFVBe8MFfyPp7RATpNiulqDscy5QTjIlmpoGU5QWadFRHYL0DcwxN28CBHgYRcCyENEIbAmAeAJGXrQg+389ToONKaBhnUEDqELtYVcQpqjVH4dw7Eu4ej4imqKYqJQQyNxQRIqRqAZHEDkYQBRSjiAABkwCfkoCyL8Oi5z6PLIYrQqJgxmJDvcJwxQrIdCmpiGwVRF6SOkbI+RijlH4FzBoteaiQmYTCXwoxUTTH6O4dIZodxZpRyqCcVc6SXFuI8V43JuYfj-GKfnUpETjHRKqbE-qGJirXRsTYRQLTMnuOyd4vJxBAJgCCtglOFtvyRiIdmMh2YKFUIBhqDJrismeJyaQbMSyVnYF6UZVQrNGbbFxNjIUbpzHSgFGWDQhRKjYhmScuZZyFmXLkUotZuCvpbJ2eQrZBzxEkGOW0+ZnS5lKNuXkN0Z8qyJMFFUGyIzBQ+m3FVeEVNZr-KRUClFS90ACEIFASgwRrnoqYUPUBBIcXWHyPihoahsRFzkvKUwahhUUtOR0i5y9aVRHpZQVOUiEgsoQJi9lhIsRcp5YgfEN0Vb+nhHoXkuIbpiuIMgFksAeBBBpXShlpscHmzwYQ0hMLKFxUOc42ZZrCAWqtdK2gUAlWSVkOMgUVh5K9SRCHSi1NUkblDWUHQ0zkEqQRa02QXqfXuKZanAA1pGMAqBmSYCCgAV0wHATigCKb5wVnIQidcERYhKNw1Q5VuUIl6vo2UojqEeoBRmy1WawC5vzYWwIpby2wF0lWvORla0dF2A2v2CgJRRpsLwlmegpQWBqFUeQJqB1BENNmvNBai0TorUwFQM6+41qmnWxd7Zl3NqjVEmUOwKjLhKPuBxYinGps9eawd2ApFyISDvQNY0VaYlDdYGpygW37Bwqw10pLuUHqA0EEDPBAI8GwJW-Ss6spQZDRuODUzI28taIJDcygxS7G0HsDD3rB1yMwOW9Oo7z3YDLRESDMhoMKDI+GhDr6rDvu5TdGO4CQyhkIDwCAcARDxUI7eoy6ZkSplFcm3sFBVPHyMsKiS5hZBlGFfiFmiCOzx304w4yegyIOhcnZd0yIagYjUDNSiClsYSEXlqWzujEGObdM510rmQ7DXLAiGSbQ8rCSjv5iknwwCBbnF6cqVh5bR3sBIZEqJ0S2JxDoCwTGdP1S1MQeT2AAD6KW0uYSjouKo+5VBlijtifLaIKz8OFSVsqi9lpJAa-nIM5Z7ShadC5qy+XtA+nYcVGpHRrPlYdp5YcI2jJ5W9BNx0zpwszZDuobGFZK7WJjtynt7qE6OwJgLNMGYcybfWPe3bYW3SHa3IKdEbpVwinMPuYqg3dZeQe8bZ75wLA+llIRBwbpIko29NiF0CpYGimB4nZKWlfJPa2kRxAK57JTRjtuAHdRYllTkCzT91gNzo9W83W7etNI+XB3jtTWVcSs1MTdToh1eoqBRs0EesJJPcrsBjpnXk1qtVx5DDnkhejlnuNUAUSMO2rq3DoYXuJRdVHF35hnvMpcgxamz+XBmsodl4fCY4-oo7wnuJq0ac37QjwJFiXErkjc3fW4TQ2Y4IcIFmqUFo8p1ylGo7UFGdoVzu8xPKPQku-fOyFkbFCQfep2ArAoVrdGtBBlKh2QW9HW1SgL8n9SrdM97BC3t6bJ1lQyn2F6VcTZthXfhQ1JircQrp2oP8IP1RY9OamwdiuQZijcrDV6LEZZK897Nu3fvg-2eW-OEcGmhQ3SDXaHl2Jwr0TeZnwnr5L9aGZ6qHX97EWtw6taL0ajqJBTD3P7-dem9TQQCH9nt7Y+PsjTT5QhBh2C5RCT7o+4qLv4fxfxB5iiyDdBYhDwLrBjXxKB7jLqdBii9D2BiqZ64jX7-635dTygqx2DYxOgmanQmrtI5KZ7oF-77YAESTrg+jVAzQyTIG8g0HIpQHoJqJB7bjVB7gEirjlC0wjT4gOAYgoFHS9Q1BIKOIprECIrirnJ+KfhB7WC7gRyURYGuh6AlSxIdisxcq-ZyjHaKF-rKGqGAoSp5JD6USEFMHEH2YlAVgNIP4mFWA8FUqSrLJBRB4WDBoF57D65hrBy8q8jojbAdhYwdiqC+H2EgoKpBHZ7W7bbhH9QSQHCQheiUQMxSjKBWRJHnKLLWoypQBD5Q6MEN45FRw4RChVALh+xxyQG2GHo147aE717j7cJN6YgJ4CRqB5Sd7-oqFpqmqYZSo2qCGq5oyIJTQWayiC5rp+zvqjFDw6BhrzRKHuQdHTHHrDqnpjrFo8aTpD6vY9E36fZarFzEBXTU6zRdoLztGTGHrEDYZgbf5r52aO4PFcomGdDcrwgtpWQPGWQySCjoyojMaZrYa4bYBaHSg3S1Cla9QFbqDcIyC8IGGzSjGMy7HWH7HvGHGWocbYBcbjrnGpa-G6K044QcraoHBNZYmvq9Q+h4j7YyRlj6KuCuBAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QGUC2BDATgFwAQAkB7VMAOgHkAzSgYgEsA7O7AQgG0AGAXUVAAdCsZnUINeIAB6IAjADZppAMwAmAOzKArGuXL5qrQBoQAT0SbVCjRx0BOAByy7GjYo2yAvu6NoseIiQoGUgAVAAswTAwAGwB9ACN0KPQGAGMwGglYbHRsMnRKXMwACnIAOQBRfHIAVQAlAEoaHxwCYjJyILCI6PjE5LTOHiQQASFsETFhqQR1G1JZRWtVABZl6WVpGxsjUwRFTdlSK1nVDlVZfWVPbwwW-3aglPCUgGsYrsjE3qTU9MHxUbCUTiaaqRRzBZLVbrTbbEyIFTLZSkc7KJzLDiyDhWDTXEDNPxtQKkJ5gV7vcKfWIJH5pGhsaRDfiCIGTUDTaRaDRHZaKBzWaTYuw2WQ7BGKLFKKwi1Y2DQOBZ4gmtAIdEnPN4fHo0-p-ZRMkYs8bAqYyLk8vlYjZCkVivbLc6kaFg6QSjSqOxgpW3QmqoLVWARUihNo0cYkbJxKJgDr-YaA41syQIzZO5waaQrHHyOx2xHLUjSOzLDOqCxWeTe3wqh6kANBkMkMN0CPoKMx6hx5ljCYglN2JSnEu6DiKDEYxR5zYFmxj7HaUduKt3Ilq+uYYOh6PoABuYC7hp7JvZiAdilIwo4RYWayvs8n8L2ynsRxcq1kNmxHA4dmXvtr66bk2ADujAQIQwGwOQfBgAwB4Jr2pp7OspAbLo+jLDYaIWLIGhTiW8x2K4nrqG4ViKH+NbEoBjbpKBDDgZBADCUSCPu3AAkaiEnshChnIoijnBws7KD+ebCYcvL7DoYLCSWFFePiPpUWqwQtmAkbRiE6kbhwAC0si4AAkqU9IcfGXHHsmCAOtyGKYmidicnYmiio+yxOKhjhEfsHAeRmsjLJR9zEmprbttpJC6QZxmmQyBoIVZ0y2U636yI5zmuXaGJzAKDgOoKixpcFq6dOpmlkGFQb6YZNTBBkWQ5HkBQREUyBGQAGlUdTII0yohap5VtlpVXRbV1TBPBllJqCWwXk5NhlhsRbFnhj4BV5IpFq6okih4in9aVkUacNlU6fMemCrFZkJdNfYIIKYKkDYRYuK6s6ehm2XFk6riYYt5ZFmoJV+sdFXHRusiXRw13xZxR4zTI-HPa9+zgny+jSNlP6FnYTjOIFcp3riB3KQNZXhSN51Q1ddUNdkuSkPkhRFAAYjUtTdbUvVNGTR1VeDo0XbTE1TQj93SBOqGZrh5xyB6a27BmdkSvskv2M4Vyk9W5Ng6dEOFvpRaw+Z3ashLH7IrI6WS1yV5jorp5EfMArW7yTnFjYIO1gL+tC4Kl12LDjLw+bSFyFh8w28OViuiW2OqFKWg6Ps8iOPtNw6-zQ0Rf7RtB3TmQM81LPtV1HM84doO+7n50B8bdVi2HPGic+hYCS4gkuJixZ2hmBZWotTm4RsDje6FOdU1FuN6coywm7d4tIcoiznhHw8-rouHLN9yLnHjAmCv5nLj4NlNndPRaz-PJn0iHFlLy3q+Fh+G8udbGg7+5mJHKPgUWKOb8mJT4UxOrXS+dhr64ELo1RmzNWply5pXPm1dJ4XyDFfOe0DRam0PM3ayK8XDzElulIB7oPIPl2I5FEagMSuWEi5BSmcVyoPPqQWBeQUjjD3M2c+VBKBN0TPdZYuFUoOTxplNwdonIKBEc+YSJDZybBAXrCKHDSCMHQFwugPDwxgOjPwwR3FrIiMTpvWOn4V5ljLHaCwidRKCTng6Ra8pfzaxYT7NB7Di4aIYFo7h6RAzYGCGAVAfAACyyQACuiQojGCMUlRACxzx+SxCoMEGx3a2MEqQH8MpeQiScG45h-5iQAHUwIQVgCSVigYIA0HooxKCME4K4MSojGyrgxEaC2N5D0Y47TSAOEcLYVi-LOH6SoipDEqmkEIC0hplTmK1PYovfByUun2R6SKPG-Sv67CGQ6JQHklpfk9M+KZSzqnzNgvTJqTMWrFFZkZAAauUcJJkJrlGQVnUG0ymlzJaQkjpPSBwbBWOCTEqsPyDL8jOUcwolqLVEqoFRtRCDEFwAoEJYSIg5CiZgMg0gaDhByOi4g0hgX3S0DOGwHkV6FUtFjdy6xuRaAsERQKK80RooxagLFIRQkwUwPiwlqEaApAxVEclqBKVtLukhLQhxLiBW-EPD8zLdhrBWCiMsvJdCHNRe40paoZUCpxcK0VZBlAkrAGSvlcq1lCMVXPZ6dLGGMocJq08OgCzWBkarTM4JeWYuxUKvF2ACVkEUBKqVMrHWh2dTxGlbr6W+QEl67KahzxqE5SOH8TkQ38rDbikVkaxUxtJdgeNVKXW0rTZ6+Q2VBIKDLFhLCPTrBYSLea8NZao1OljYQaVDra3Jt0CiJV9l1UvWbToX+XrOSnGsEFY1KkghmpLZa8tZBli2vtRSsd1liwKE2Nid0XK5TKGbTqtQn5zhuDPD2rdEaB0aCHSOw98rH7HqRM9ChKwFgQswnO7k-qXL6DlPKDOSlfm1k3aQJiohsCYGHaQf5VToK3MaVUlibEj3TAcGy9QmIVpQcMO5OwV4jijjWOrLQZxn2IeQ6hqIpAAAyYACg0FgoUAjiAiNHBIzmYU6Zr3uSxHMZwDhLxzxciTEp67SAIaQwwFDaGyiLJmZBLDrSnXGMI6I90okRPkfE1qxFTp9BLVkuCYpsGPHEhUyxjTpltx7n4wgQTxnSN4zM9lU4bLFhESRGOeSTHVPqbY2UUg+A7XYDuXAx5RRgjlFKB80oXyfmOdNXygVkXWMUFKLF+LnmGPHPxj0oSpxVDfSLLkj8x85DCSYQ5k1G68sKAK655jw7Esl1aql9LnzUvZfa8pzrzG1OFZi0h4dZXORiPShI+UWUJMiIa7LQUz4ywRZc9F4rZT0DCAYFAfd2AE0P3WYgZWS2Mqrake5OlHALw6HdCsZ8wotaKd1s56bPWjsnbO5K4dl2zZJusrd+yy2nIPbclq-eF5Ngr3kCIuUTHkCwVgIQDcgPxinf6w8lmzy3kZay31FB8HJuY4YNj3Hx38dQE80MyUeNrAZqLDleHCJ5QD0-i9HueMqMwarlT0NpAad08QxqC1r7CWwBuomgzSSMTzBWOe-nX3ud7AsMiDyMnXR+XlhjrHOPpdkheLL-t8u776cSQgVVauMTpkwlrvMHslCzjSZmVxq6ftHQQ5Ls3TEZd9qtQrtg+olf28dxcZ3zhXdYW1+CFePINY-kEulRwJvadm+wBipDUR6nM+a-NdnfJOcSTzOoMFAlaMZhcSfNdv3qem43PnwgRAEsl9Z1RleFfixV8fHyASSgvsuW2phDyOepdIcwISrhVurWK6uxDjkpe2f949lzvMH0eSa3sPqwSPbkRL53YWc7MrlBlddVsBto4mWDL2iiUc1iekVh5c3gPeXT9h-PzakHT9VAa-b9a7BAFNO-D1B-TNR8USRbOUOhXCLlbEP3NrJTM1X-UtK1cVKtK-G-etKAjNJtWAzEbkUSWUTkeUF6aQE-QVLA8-GNQAvA0AtfG7Cdc4McJwTEJA-QO0ZaAsEsTCMiFwNOWgs-AdSteLZgu3EFW-d1BlaA4gqhOQc8QLJETkChDYVrUXJzH-Og7dAdPdJgvlEAmQ6lOQ+-Ig71BAHQFCKDPGbeRYXQbQynXQzFTAgwsVPdXAkw-A1NQgx-WAtWNMRwOQFwOeCUI1f3UGDA-QuXMgd9Yw4gUw6PWQ5VG8Lgj+C4R2Gw3QZEEzVwTkQSF0FwuDNw-lZEbrNjDDHTBZHDZZfDFg5XLzIzYTMjMTPgsEAcUIzMZraglYWgqojjLjBLXjCITzbzNovzDo2Az+ZVaFCUO-dYQY-bIrLTJpXTCY1okzdozWPgkLeYFwd0AmcEKItAlvdwqbKLNY9zVZVI+6SYnY6YvY2ArlF-T0C4beXQBTc47-S4oYmLOLHIQneBYoIbMnUbCnMo3Lf41YwE0rJo+3crTg9MRaLEGrTo5wVCB0beGrC4TMFY-7A7XrKIEE5LcEkbb5KEnLDrWEokorEkhbOyNKe7eTbXTQZ2JxYSMELYeWH4nQmEioq4mbQ7BnRgM7KtFI1fZoqHFklbNk-Yj0XJb8FYU4TJM4gU2koUgE0UoHD9KU8HGUxbaHVktbKhQLN1DlRadYPab7X4mIvQoPenPUoue5UEtmV5d5SksbdAx0tvdDMU07HvF7TfDnQfW0R8SWTQC8fYCDERZJCUWgp083V4cQm3TzWPdXF3ewJPQZZwc8D+T+ERFyPyT-aIsXIU5MkPC3NMuAW3e4pCTM+PTXXMyM3CKTIcQKdYXCYBL-B0y4qs0PegqNCPKPaUmPVXOPDXRPXQQZc4AsdQfE9Q5wawJM-0jvQvYvREjpFnEMvvMMnfSMtwOYHKYUa2Qfb8ezTUibAc9cjFLvFfQ0+3XcsvLfSvCMg5OPI4a2SWXkEsYDNc3PDcOfBfYJP-KNR8vBVgh6DffcgfQ8g5NtGhFeESZadYI1RSBgQgCAOAcQUXBsniAyO0AyF7IBMi8igkvs9oagAikxczMwd0BQEfELTCLtASEBWijkVQXKMETPFrUSKjShMwRObaQSl6NwIou068rUL4HUX4TimQGrXJS8ZwZyH8HIscdKXJRYLCDYN6f+FRUkckGS6kPoeS8cjpNEPiXioSESMSYfDGC8Ucag4Ua01wFRdcBSmwhYXJGyyTFQey3YIqOYTQGEOAvQZwDywMDcWiLygSZED2DQ-GKjEDYfT7X6V3NQbk62KS1wtcaK0gLC7AGIWKiy6lHVNVeUecNwCwOEIK9Kv8+wLKtE9KFRGuaMLyueMDPy-in8UcQZSWJQBYRwbixYHpOPNqrxUaTq2cXygSWygK3MEgywEsT+Gld0UTUomk1RKeaqGKEyOKtYOaviuypapWIZXJT7L8OUYeT0SathIWGqbBYILyxwF7BPdQVYLXWrdaQa3CLuQQkseTe6-RdBSGaGWKLyhAkZdYcg3o3ivuP6lwDCIsh7EGwWamCGuqLy9CnivI04C4VOHIjMc8Es9Q5aOeWcdGv2OufOSGsq8Od0c8ASKfR6DksERG0m8gtCIZSmra8bdqsGw2QOZ6nGyzYeOeYSQhfQM6m7Owz0H8D0NtTkL2KiieB6uuSBLBA6hmluIsUmpEDlIcbQbXDMZEewU4T0EicS1W8s9W0Gg2TBeebG3WghKwAcFQcEIZfQeQM4LNPXK8EeTJewQ5amtRYuGalJHq06u0SES668HCEsa2MOrSdRfxHRMAQ66y+a-ygS6RaM84TGcSlYJyDUvK0BcGdRTRbRPcV6nVZOFK4sB0YeaRCUCrTGPkELZOtWtUGo+AV26YZw46havOx8OUROdQTYBW+jXsu23uq5GpNiCAOKi6-iE6xagavGT3d1SenMtYS5bTa5FpOul7a2S4G2z8RwAal8ewM4acY4HpZ9TqtQYe3OvqoS+0QUVCF6MatEVi3QJjWsyO1+3q2WmyQBSdSWFQMIjWfk8um84tOI63IlLOkBmOllTMZ6DuKgqFV6QB8CsVZQOu+xDVU40FOQbKZyC8OhLMj8H8fB4citVBtekewKn1aMm2ewIpcEVqnurU3tRh3dYhzad6SDFu9yfYGcVwVuJwceq8+BhDWso4KG52ERDyZrYcRaD+3kTB3kBjNEd-XbPhhB-LfbTq-QNBje9yQ23+FxGW-6Mu6E-hrrVYvu3THGh-MfS8bs1YH8bXDyYSJ0a2O+jMRuvbekzjAoKG0RJyTeP6FYOUbRvQX+OOT8HE7uue5x4U1zOK1PFht+sBksQaiwW2GSJEbEcJ64+EnILykp7EgJl6a2WcGxSjLS-pNwHo5wypkUkk2pi6pxKjRpj8Yo7KOhlEFKr2refm308XHUgMoHOKiwSx0erVYZlEQQymoZFQTQGfHHYB-J0BvMTCROM8PSrYEUL0YxwPf0vHcUnGzS6WLIh-UsjSlyE8uedKNRt7Rx7a65oClMy3Ah3CgehEI6g59BoKvzXJEsb8PkewPkXKpxkxhQZMjc4dZekFhAAGeYDyT8AXVVTQavUcVCd+YUIsM4Gq3Z9ve8wgbAKGpUruT8bgs4Ohd3HGd2L3YsHZq51vf5kCskMCwRqGnpElxYfyKwUjXfV0EZUJmFpEJEeRpFjA5+sxaOxa-qyM0KoJmRNEVwd1MQoF-ZtVlZmQT0BQLCFydQ1YXVg1wRwsOuuYEOj0WFueRyJ-EVoZK8LQWR7EFQW1zw61Zh41thh6HZb+h9TQB0AxuBpVvQpRxQB156UuqjUcV1vGPghhI4GWVyhwNQIsf1+Ip0INnOw52AsI7+57Ip+KmN35uNoF5RzFi4R15Nl1hVsBt7AedYELJyGF6Zi47UsxzFtQbqktiFswCUBcs4Ky9lKMwk64tx4+zFxlLxz8HxjEBwTojbQKdGfJdXVA682IoYyJulzFkUbkWJxhT+BJlwPghPeYXk-YMEciGt8bQ9uE0oXJqO0dqxqhIp+aF6XStYF6RF2tukqp4rIEk9p8jpOpgZhRJpkZ2A7ix1vQCd-1fenlsDnpubKIPphQODoZ5pn6qhdKROG6zMPFqSH519vQuZ2507RZ7O9ek17yxYZ6BlQKT0SxW2+0is3AZEJ0o179lj10PkQ478QhY4fNzDysm5wMqAe5jbDYJ5uvJEHI+WU+r1tYIDgBfdhRv0vlocgN-u6D+6McJj1hsBoNF7Ww7ySEcEdHGT-jiXO8wgTc+l+YrMLZhAjyPM1YNMEUbEG6jYQCqXDvLvelk5wKXkfpZpx7T8zCYheUEQ2Eb10L4PHHUCoB09kV3VvyfGNKawn3Bcyeq8Kyj8EmTwIAA */
     types: {
       /* eslint-disable @typescript-eslint/consistent-type-assertions */
       context: {} as Context,
@@ -102,15 +90,15 @@ export const machine = createMachine(
     context: {
       room1: {
         actual_temperature: 3,
-        target_temperature: 3
+        target_temperature: 3,
       },
       room2: {
         actual_temperature: 4,
-        target_temperature: 4
+        target_temperature: 4,
       },
       isTimetableOn: true,
     },
-    id: 'Smart On',
+    id: 'Smart Home',
     initial: 'Off',
     states: {
       Off: {
@@ -122,6 +110,38 @@ export const machine = createMachine(
       },
       On: {
         states: {
+          Thermal_balance: {
+            after:
+              {
+                ONEHOUR: {
+                  target: 'check_Thermal_balance',
+                }
+              },
+          },
+          check_Thermal_balance: {
+            always: [
+              {
+                guard: 'room1ColderThanRoom2',
+                target: 'Thermal_balance',
+                actions: [
+                  'heatRoom1' as EventTypes.HeatRoom1,
+                  'coolRoom2' as EventTypes.HeatRoom1,
+                ]
+              },
+              {
+                guard: 'room1HotterThanRoom2',
+                target: 'Thermal_balance',
+                actions: [
+                  'coolRoom1' as EventTypes.HeatRoom1,
+                  'heatRoom2' as EventTypes.HeatRoom1,
+                ]
+              },
+              {
+                guard: 'room1EqualToRoom2',
+                target: 'Thermal_balance',
+              },
+            ],
+          },
           User: {
             initial: 'home',
             states: {
@@ -247,7 +267,10 @@ export const machine = createMachine(
                       timetableOff: {
                         target: 'active',
                         actions: 'setTimetableOn'
-                      }
+                      },
+                      setTempManually: {
+                        actions: 'setTargetTemperature',
+                      },
                     }
                   }
                 }
@@ -260,9 +283,7 @@ export const machine = createMachine(
             states: {
               closed: {
                 on: {
-                  windowsOpen: {
-                    target: 'open'
-                  }
+                  windowsOpen: "open"
                 }
               },
               open: {
@@ -271,8 +292,8 @@ export const machine = createMachine(
                     target: 'open',
                     description: 'decrease temperature in all rooms',
                     actions: [
-                      { type: 'decreaseTemperature', params: { roomKey: Rooms.room1 } },
-                      { type: 'decreaseTemperature', params: { roomKey: Rooms.room2 } }
+                      'cool1' as EventTypes.Cool1,
+                      'cool2' as EventTypes.Cool2,
                     ]
                   }
                 },
@@ -286,6 +307,71 @@ export const machine = createMachine(
           },
           'Room 1': {
             states: {
+
+              Temperature: {
+                initial: '3',
+                states: {
+                  '1': {
+                    entry: assign({
+                      room1: ({context}) => {return { ...context.room1, actual_temperature: 1 }}
+                    }),
+                    on: {
+                      heatRoom1: {
+                        target: '2'
+                      },
+                    },
+                  },
+                  '2': {
+                    entry: assign({
+                      room1: ({context}) => {return { ...context.room1, actual_temperature: 2 }}
+                    }),
+                    on: {
+                      coolRoom1: {
+                        target: '1'
+                      },
+                      heatRoom1: {
+                        target: '3'
+                      },
+                    },
+                  },
+                  '3': {
+                    entry: assign({
+                      room1: ({context}) => {return { ...context.room1, actual_temperature: 3 }}
+                    }),
+                    on: {
+                      coolRoom1: {
+                        target: '2',
+                      },
+                      heatRoom1: {
+                        target: '4'
+                      },
+                    },
+                  },
+                  '4': {
+                    entry: assign({
+                      room1: ({context}) => {return { ...context.room1, actual_temperature: 4 }}
+                    }),
+                    on: {
+                      coolRoom1: {
+                        target: '3'
+                      },
+                      heatRoom1: {
+                        target: '5'
+                      },
+                    },
+                  },
+                  '5': {
+                    entry: assign({
+                      room1: ({context}) => {return { ...context.room1, actual_temperature: 5 }}
+                    }),
+                    on: {
+                      coolRoom1: {
+                        target: '4'
+                      },
+                    },
+                  },
+                },
+              },
 
               Control: {
                 initial: 'ON',
@@ -321,7 +407,7 @@ export const machine = createMachine(
                           TENMINUTES: {
                             target: 'Waiting',
                             description: 'increase temperature',
-                            actions: { type: 'increaseTemperature', params: { roomKey: Rooms.room1 } }
+                            actions: 'heatRoom1' as EventTypes.HeatRoom1,
                           },
                         },
                       },
@@ -330,16 +416,16 @@ export const machine = createMachine(
                           TENMINUTES: {
                             target: 'Waiting',
                             description: 'decrease temperature',
-                            actions: { type: 'decreaseTemperature', params: { roomKey: Rooms.room1 } }
+                            actions: 'coolRoom1' as EventTypes.CoolRoom1,
                           },
                         },
                       },
                       Waiting: {
                         on: {
-                          heat: {
+                          heat1: {
                             target: 'Heat'
                           },
-                          cool: {
+                          cool1: {
                             target: 'Cool'
                           }
                         }
@@ -353,9 +439,7 @@ export const machine = createMachine(
                 states: {
                   Waiting: {
                     after: {
-                      FIVEMINUTES: {
-                        target: 'CheckTemperatures',
-                      },
+                      FIVEMINUTES: "CheckTemperatures",
                     },
                   },
                   CheckTemperatures: {
@@ -379,19 +463,19 @@ export const machine = createMachine(
                     ],
                   },
                   tooCold: {
-                    entry: ['heat' as EventTypes.Heat],
+                    entry: ['heat1' as EventTypes.Heat1],
                     always: {
                       target: 'Waiting'
                     }
                   },
                   tooHot: {
-                    entry: ['cool' as EventTypes.Cool],
+                    entry: ['cool1' as EventTypes.Cool1],
                     always: {
                       target: 'Waiting'
                     }
                   },
                   CorrectTemperature: {
-                    entry: ['off' as EventTypes.Off],
+                    entry: ['off1' as EventTypes.Off1],
                     always: {
                       target: 'Waiting'
                     }
@@ -400,7 +484,186 @@ export const machine = createMachine(
               }
             },
             type: 'parallel'
-          }
+          },
+          'Room 2': {
+            states: {
+
+              Temperature: {
+                initial: '4',
+                states: {
+                  '1': {
+                    entry: assign({
+                      room2: ({context}) => {return { ...context.room1, actual_temperature: 1 }}
+                    }),
+                    on: {
+                      heatRoom2: {
+                        target: '2'
+                      },
+                    },
+                  },
+                  '2': {
+                    entry: assign({
+                      room2: ({context}) => {return { ...context.room1, actual_temperature: 2 }}
+                    }),
+                    on: {
+                      coolRoom2: {
+                        target: '1'
+                      },
+                      heatRoom2: {
+                        target: '3'
+                      },
+                    },
+                  },
+                  '3': {
+                    entry: assign({
+                      room2: ({context}) => {return { ...context.room1, actual_temperature: 3 }}
+                    }),
+                    on: {
+                      coolRoom2: {
+                        target: '2'
+                      },
+                      heatRoom2: {
+                        target: '4'
+                      },
+                    },
+                  },
+                  '4': {
+                    entry: assign({
+                      room2: ({context}) => {return { ...context.room1, actual_temperature: 4 }}
+                    }),
+                    on: {
+                      coolRoom2: {
+                        target: '3'
+                      },
+                      heatRoom2: {
+                        target: '5'
+                      },
+                    },
+                  },
+                  '5': {
+                    entry: assign({
+                      room2: ({context}) => {return { ...context.room1, actual_temperature: 5 }}
+                    }),
+                    on: {
+                      coolRoom2: {
+                        target: '4'
+                      },
+                    },
+                  },
+                },
+              },
+              Control: {
+                initial: 'ON',
+                states: {
+                  WindowsOpen: {
+                    on: {
+                      windowsClose: {
+                        target: 'ON'
+                      }
+                    }
+                  },
+                  Left: {
+                    on: {
+                      enter: {
+                        target: 'ON'
+                      }
+                    }
+                  },
+                  ON: {
+                    initial: 'Waiting',
+                    description: 'increase/decrease temperature every 10 minutes',
+                    on: {
+                      windowsOpen: {
+                        target: 'WindowsOpen'
+                      },
+                      leave: {
+                        target: 'Left'
+                      }
+                    },
+                    states: {
+                      Heat: {
+                        after: {
+                          TENMINUTES: {
+                            target: 'Waiting',
+                            description: 'increase temperature',
+                            actions: 'heatRoom2' as EventTypes.HeatRoom2,
+                          },
+                        },
+                      },
+                      Cool: {
+                        after: {
+                          TENMINUTES: {
+                            target: 'Waiting',
+                            description: 'decrease temperature',
+                            actions: 'coolRoom2' as EventTypes.CoolRoom2,
+                          },
+                        },
+                      },
+                      Waiting: {
+                        on: {
+                          heat2: {
+                            target: 'Heat'
+                          },
+                          cool2: {
+                            target: 'Cool'
+                          }
+                        }
+                      },
+                    }
+                  }
+                }
+              },
+              Sensor: {
+                initial: 'CheckTemperatures',
+                states: {
+                  Waiting: {
+                    after: {
+                      FIVEMINUTES: "CheckTemperatures",
+                    },
+                  },
+                  CheckTemperatures: {
+                    description: 'compare target to actual temperature',
+                    always: [
+                      {
+                        guard: { type: 'isTooCold', params: { roomKey: Rooms.room2 } },
+                        target: 'tooCold',
+                        description: 'if target_temperatur > actual_temperatur',
+                      },
+                      {
+                        guard: { type: 'isTooHot', params: { roomKey: Rooms.room2 } },
+                        target: 'tooHot',
+                        description: 'if target_temperatur < actual_temperatur'
+                      },
+                      {
+                        guard: { type: 'isCorrectTemperature', params: { roomKey: Rooms.room2 } },
+                        target: 'CorrectTemperature',
+                        description: 'if target_temperatur == actual_temperatur'
+                      },
+                    ],
+                  },
+                  tooCold: {
+                    entry: ['heat2' as EventTypes.Heat2],
+                    always: {
+                      target: 'Waiting'
+                    }
+                  },
+                  tooHot: {
+                    entry: ['cool2' as EventTypes.Cool2],
+                    always: {
+                      target: 'Waiting'
+                    }
+                  },
+                  CorrectTemperature: {
+                    entry: ['off2' as EventTypes.Off2],
+                    always: {
+                      target: 'Waiting'
+                    }
+                  }
+                }
+              }
+            },
+            type: 'parallel'
+          },
         },
         type: 'parallel'
       }
@@ -408,25 +671,27 @@ export const machine = createMachine(
   },
   {
     actions: {
-      cool: raise({ type: EventTypes.Cool }),
-      off: raise({ type: EventTypes.Off }),
-      heat: raise({ type: EventTypes.Heat }),
+      cool1: raise({ type: EventTypes.Cool1 }),
+      off1: raise({ type: EventTypes.Off1 }),
+      heat1: raise({ type: EventTypes.Heat1 }),
+      heatRoom1: raise({ type: EventTypes.HeatRoom1 }),
+      coolRoom1: raise({ type: EventTypes.CoolRoom1 }),
       setTimetableOn: assign({ isTimetableOn: true }),
       setTimetableOff: assign({ isTimetableOn: false }),
-      increaseTemperature: assign({
-        room1: updateRoomTemperature('increase', Rooms.room1),
-        room2: updateRoomTemperature('increase', Rooms.room2)
-      }),
-      decreaseTemperature: assign({
-        room1: updateRoomTemperature('decrease', Rooms.room1),
-        room2: updateRoomTemperature('decrease', Rooms.room2)
-      }),
-      setTargetTemperature: ({ context }, action: setTargetTemperature['params']) => {
-        const targetTemperature = action.target_temperature
-        assign({
-          room1: { ...context.room1, target_temperature: targetTemperature.room1 },
-          room2: { ...context.room2, target_temperature: targetTemperature.room2 },
-        })
+      setTargetTemperature: ({ context, event }, action) => {
+        if (action) {
+          assign({
+            room1: { ...context.room1, target_temperature: action.target_temperature.room1 },
+            room2: { ...context.room2, target_temperature: action.target_temperature.room2 },
+          })
+        } else if (event.type == 'setTempManually')	{
+          assign({
+            room1: { ...context.room1, target_temperature: event.room1 },
+            room2: { ...context.room2, target_temperature: event.room2 },
+          })
+        } else {
+          Error
+        }
       },
     },
     delays: {
@@ -434,6 +699,7 @@ export const machine = createMachine(
       FIVEMINUTES: oneMinute * 5,
       SIXHOURS: oneMinute * 6 * 60,
       FOURHOURS: oneMinute * 4 * 60,
+      ONEHOUR: oneMinute * 60,
     },
     guards: {
       isTooCold: ({ context }, guard) => {
@@ -449,6 +715,18 @@ export const machine = createMachine(
       isCorrectTemperature: ({ context }, guard) => {
         const result = context[guard.roomKey].target_temperature === context[guard.roomKey].actual_temperature
         console.log(`isCorrectTemperature? : ${String(result)}`)
+        return result
+      },
+      room1ColderThanRoom2: ({ context }) => {
+        const result = context.room1.actual_temperature + 1 < context.room2.actual_temperature
+        return result
+      },
+      room1HotterThanRoom2: ({ context }) => {
+        const result = context.room1.actual_temperature + 1 > context.room2.actual_temperature
+        return result
+      },
+      room1EqualToRoom2: ({ context }) => {
+        const result = context.room1.actual_temperature + 1 > context.room2.actual_temperature
         return result
       },
       isTimetableOn: ({ context }) => {
@@ -472,13 +750,6 @@ actor.subscribe((snapshot) => {
   console.log('################################')
 })
 
-const sendEvent = (event: EventTypes): void => {
-  console.log('########## NEW EVENT ###########')
-  console.log('event', event)
-  console.log('################################')
-  actor.send({ type: event })
-}
-
 // Helper function to create a delay
 function delay(duration: number) {
   return new Promise(resolve => setTimeout(resolve, duration));
@@ -489,17 +760,20 @@ async function run() {
 
   // Initialize the actor and start the event sequence
   actor.start();
-  sendEvent(EventTypes.Init);
-  sendEvent(EventTypes.TimetableOn);
+  actor.send({ type: EventTypes.Init })
 
-  await delay(oneMinute * 30);
-  sendEvent(EventTypes.WindowsOpen);
+  await delay(oneMinute * 60 * 9);
+  actor.send({ type: EventTypes.WindowsOpen })
 
-  await delay(oneMinute * 120);
-  sendEvent(EventTypes.WindowsClose);
+  await delay(oneMinute * 60 * 12);
+  actor.send({ type: EventTypes.WindowsClose })
 
-  await delay(oneMinute * 120);
-  sendEvent(EventTypes.Leave);
+  await delay(oneMinute * 60 * 14);
+  actor.send({ type: EventTypes.TimetableOff })
+  actor.send({ type: 'setTempManually', room1: 5, room2: 5 })
+
+  await delay(oneMinute * 60 * 24 + oneMinute * 60 * 6);
+  actor.send({ type: EventTypes.Leave })
 
 }
 
