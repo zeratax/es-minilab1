@@ -47,7 +47,7 @@ enum EventTypes {
 
 type Events =
   | { type: EventTypes }
-  | { type: 'setTempManually', room1: number, room2: number }
+  | { type: 'setTempManually' } & { [key in Rooms]: number }
 
 type Guards =
   | { type: 'isTooCold', params: { roomKey: Rooms } }
