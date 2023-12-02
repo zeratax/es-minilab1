@@ -307,7 +307,6 @@ export const machine = createMachine(
           },
           'Room 1': {
             states: {
-
               Temperature: {
                 initial: '3',
                 states: {
@@ -372,7 +371,6 @@ export const machine = createMachine(
                   },
                 },
               },
-
               Control: {
                 initial: 'ON',
                 states: {
@@ -487,7 +485,6 @@ export const machine = createMachine(
           },
           'Room 2': {
             states: {
-
               Temperature: {
                 initial: '4',
                 states: {
@@ -726,7 +723,7 @@ export const machine = createMachine(
         return result
       },
       room1EqualToRoom2: ({ context }) => {
-        const result = context.room1.actual_temperature + 1 > context.room2.actual_temperature
+        const result = context.room1.actual_temperature + 1 == context.room2.actual_temperature
         return result
       },
       isTimetableOn: ({ context }) => {
